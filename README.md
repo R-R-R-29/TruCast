@@ -18,8 +18,9 @@ The system can be integrated into authentication platforms, banking apps, procto
 
 * React.js
 * Vite
-* Tailwind CSS
-* JavaScript (ES6+)
+* CSS
+* HTML
+* Javascript
 
 ### 🔧 Backend
 
@@ -36,9 +37,8 @@ The system can be integrated into authentication platforms, banking apps, procto
 
 ### ☁️ Deployment
 
-* Frontend: Vercel / Netlify
 * Backend: Render / Railway
-* HTTPS Enabled
+
 
 ---
 
@@ -138,7 +138,7 @@ uvicorn main:app --reload
 Backend runs at:
 
 ```
-http://localhost:8000
+http://127.0.0.1:8000
 ```
 
 ---
@@ -152,13 +152,94 @@ npm run dev
 Frontend runs at:
 
 ```
-http://localhost:8000
+http://localhost:5173/
 ```
 
 ---
 
 ## 🔌 API Documentation
 http://127.0.0.1:8000
+
+## Architecutre diagram
+
+┌──────────────────────────┐
+                    │        Frontend          │
+                    │  (React / HTML / JS)     │
+                    │                          │
+                    │  • Video Capture         │
+                    │  • Frame Extraction      │
+                    │  • UI Alerts             │
+                    └─────────────┬────────────┘
+                                  │
+                                  │ HTTP / WebSocket
+                                  ▼
+                    ┌──────────────────────────┐
+                    │        Backend API       │
+                    │      (FastAPI + Uvicorn) │
+                    │                          │
+                    │  • REST Endpoints        │
+                    │  • WebSocket Streaming   │
+                    │  • Image Preprocessing   │
+                    └─────────────┬────────────┘
+                                  │
+                                  │ Torch Inference
+                                  ▼
+                    ┌──────────────────────────┐
+                    │   DeepShield Model       │
+                    │  (EfficientNet-B4)       │
+                    │                          │
+                    │  • Feature Extraction    │
+                    │  • Binary Classification │
+                    └─────────────┬────────────┘
+                                  │
+                                  ▼
+                    ┌──────────────────────────┐
+                    │   Prediction Response    │
+                    │                          │
+                    │  • Real / Fake           │
+                    │  • Confidence Score      │
+                    └──────────────────────────┘
+
+                    Input Frame (224x224 RGB)
+          │
+          ▼
+Preprocessing
+(Resize → Normalize → Tensor)
+          │
+          ▼
+EfficientNet-B4 Backbone
+(Pretrained on ImageNet)
+          │
+          ▼
+Global Average Pooling
+          │
+          ▼
+Fully Connected Layer
+          │
+          ▼
+Sigmoid Output
+(Real / Fake Probability)
+
+┌────────────────────────┐
+                │        User Browser    │
+                └────────────┬───────────┘
+                             │ HTTPS
+                             ▼
+                ┌────────────────────────┐
+                │  Frontend (Vercel)     │
+                └────────────┬───────────┘
+                             │ API Calls
+                             ▼
+                ┌────────────────────────┐
+                │  Backend (Render)      │
+                │  FastAPI + Model       │
+                └────────────┬───────────┘
+                             │
+                             ▼
+                ┌────────────────────────┐
+                │ GPU Inference Engine   │
+                │ PyTorch + EfficientNet │
+                └────────────────────────┘
 ### 📍 POST /analyze
 
 Analyzes an image frame and returns deepfake classification.
